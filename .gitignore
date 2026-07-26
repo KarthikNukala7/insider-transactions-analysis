@@ -1,0 +1,15 @@
+# Python
+__pycache__/
+*.py[cod]
+
+# Environment variables
+.env
+
+# Large datasets
+data/
+
+# Generated images
+images/
+
+# VS Code
+.vscode/

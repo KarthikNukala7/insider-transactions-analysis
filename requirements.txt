@@ -4,3 +4,4 @@ matplotlib
 requests
 yfinance
 jupyter
+sec-edgar-downloader

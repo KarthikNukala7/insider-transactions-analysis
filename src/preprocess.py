@@ -1,16 +1,11 @@
 import pandas as pd
 
 
-def load_data(file_path):
-    """
-    Load insider transaction CSV.
-    """
-    df = pd.read_csv(file_path)
+def load_data():
+    df = pd.read_csv("data/filings.csv")
 
-    print("\nData Loaded Successfully!\n")
-
-    print(df.head())
-
-    print("\nShape:", df.shape)
+    print("✅ Dataset Loaded Successfully!")
+    print(f"Rows: {len(df):,}")
+    print(f"Columns: {len(df.columns)}")
 
     return df

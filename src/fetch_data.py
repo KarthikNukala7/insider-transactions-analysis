@@ -1,22 +1,30 @@
-import yfinance as yf
+import os
+import requests
 import pandas as pd
+from dotenv import load_dotenv
+
+load_dotenv()
+
+API_KEY = os.getenv("FMP_API_KEY")
 
 
-def fetch_stock_data(ticker="AAPL", period="1y"):
-    """
-    Downloads historical stock data using Yahoo Finance.
-    """
+def fetch_insider_transactions(symbol):
+    url = (
+        f"https://financialmodelingprep.com/api/v4/"
+        f"insider-trading?symbol={symbol}&limit=100&apikey={API_KEY}"
+    )
 
-    print(f"Downloading data for {ticker}...")
+    response = requests.get(url)
+    response.raise_for_status()
 
-    stock = yf.Ticker(ticker)
+    data = response.json()
 
-    df = stock.history(period=period)
+    if not data:
+        print("❌ No insider transactions found.")
+        return pd.DataFrame()
+
+    df = pd.DataFrame(data)
+
+    print(f"✅ Downloaded {len(df)} insider transactions.")
 
     return df
-
-
-if __name__ == "__main__":
-    data = fetch_stock_data()
-
-    print(data.head())
