@@ -18,24 +18,16 @@ def company_summary(df, ticker):
 
     company = df[df["ticker_symbol"] == ticker.upper()]
 
-    print("\n" + "=" * 50)
-    print(f"Company : {ticker.upper()}")
-    print("=" * 50)
-
     if company.empty:
-        print("❌ Company not found.")
-        return
+        return None
 
-    print(f"Company Name : {company.iloc[0]['company_name']}")
-    print(f"Total Filings : {len(company)}")
-
-    print("\nTransaction Types\n")
-    print(company["aggregated_signal"].value_counts())
-
-    print("\nTop Insider Roles\n")
-    print(company["insider_role"].value_counts().head(10))
-
-    print("\nTotal Value (USD)")
-    print(f"${company['aggregated_value_usd'].sum():,.2f}")
+    return {
+        "company_name": company.iloc[0]["company_name"],
+        "total_filings": len(company),
+        "transaction_types": company["aggregated_signal"].value_counts(),
+        "top_roles": company["insider_role"].value_counts().head(10),
+        "total_value": company["aggregated_value_usd"].sum(),
+        "data": company
+    }
     
-    return company
+    

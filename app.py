@@ -20,9 +20,9 @@ st.caption("Interactive dashboard for analyzing SEC insider trading filings.")
 # -----------------------------
 # Load Dataset
 # -----------------------------
-@st.cache_data
-def get_data():
-    df = load_data()
+@st.cache_data 
+def get_data(): 
+    df = pd.read_csv("sample_data.csv") 
     df["filing_date"] = pd.to_datetime(df["filing_date"])
     return df
 
@@ -110,18 +110,18 @@ if analyze:
             len(company_df)
         )
 
-    with col3:
-        st.metric(
+    with col3: 
+        st.metric( 
             "💰 Total Value (USD)",
-            f"${company_df['aggregated_value_usd'].sum():,.2f}"
-        )
+            f"${company_df['aggregated_value_usd'].sum():,.2f}" 
+        ) 
 
         buy_col, sell_col = st.columns(2)
 
     with buy_col: 
         st.success(f"🟢 Buy Transactions: {buy_count}") 
 
-    with sell_col:
+    with sell_col: 
         st.error(f"🔴 Sell Transactions: {sell_count}")
 
     st.divider()
