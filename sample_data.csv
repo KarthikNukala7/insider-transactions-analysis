@@ -1,7 +1,7 @@
- ticker_symbol,company_name,filing_date,insider_role,aggregated_signal,aggregated_value_usd
+ticker_symbol,company_name,filing_date,insider_role,aggregated_signal,aggregated_value_usd
 AAPL,Apple Inc.,2025-04-01,CEO,sell,-24184658
-AAPL,Apple Inc.,2025-04-01,COO,sell,-7950691 
+AAPL,Apple Inc.,2025-04-01,COO,sell,-7950691
 AAPL,Apple Inc.,2025-04-15,SVP,none,0
-MSFT,Microsoft Corporation,2025-03-10,Director,buy,1200000 
-MSFT,Microsoft Corporation,2025-05-12,CFO,sell,-3500000 
+MSFT,Microsoft Corporation,2025-03-10,Director,buy,1200000
+MSFT,Microsoft Corporation,2025-05-12,CFO,sell,-3500000
 NVDA,NVIDIA Corporation,2025-06-01,Director,buy,2500000

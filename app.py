@@ -20,12 +20,33 @@ st.caption("Interactive dashboard for analyzing SEC insider trading filings.")
 # -----------------------------
 # Load Dataset
 # -----------------------------
-@st.cache_data 
-def get_data(): 
-    df = pd.read_csv("sample_data.csv") 
-    df["filing_date"] = pd.to_datetime(df["filing_date"])
-    return df
+import os
 
+@st.cache_data
+def get_data():
+
+    if os.path.exists("data/filings.csv"):
+        # Full local dataset
+        df = load_data()
+
+    else:
+        # Lightweight deployment dataset
+        df = pd.read_csv(
+            "sample_data.csv",
+            encoding="utf-8-sig",
+            skipinitialspace=True
+        )
+
+    # Clean column names
+    df.columns = (
+        df.columns
+        .str.strip()
+        .str.replace("\ufeff", "", regex=False)
+    )
+
+    df["filing_date"] = pd.to_datetime(df["filing_date"])
+
+    return df
 df = get_data()
 
 # -----------------------------
