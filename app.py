@@ -49,15 +49,29 @@ def get_data():
     return df
 df = get_data()
 
+# Load ticker list
+tickers_df = pd.read_csv("tickers.csv")
+
+# Create display options
+ticker_options = (
+    tickers_df["company_name"] +
+    " (" +
+    tickers_df["ticker_symbol"] +
+    ")"
+).tolist()
+
 # -----------------------------
 # Sidebar
 # -----------------------------
 st.sidebar.header("📌 Controls")
 
-ticker = st.sidebar.text_input(
-    "Stock Symbol",
-    "AAPL"
-).upper()
+selected_company = st.sidebar.selectbox(
+    "Search Company",
+    ticker_options
+)
+
+# Extract ticker from selection
+ticker = selected_company.split("(")[-1].replace(")", "")
 
 transaction_filter = st.sidebar.selectbox(
     "Transaction Type",
@@ -106,7 +120,8 @@ if analyze:
         (company_df["filing_date"] >= start_date) &
         (company_df["filing_date"] <= end_date)
     ]
-        # -----------------------------
+
+    # -----------------------------
     # Metrics
     # -----------------------------
     buy_count = len(
@@ -117,92 +132,52 @@ if analyze:
         company_df[company_df["aggregated_signal"] == "sell"]
     )
 
+    # Top metrics
     col1, col2, col3 = st.columns(3)
 
     with col1:
         st.metric(
-            "🏢 Company",
-            result["company_name"]
+            label="🏢 Company",
+            value=result["company_name"]
         )
 
     with col2:
         st.metric(
-            "📄 Total Filings",
-            len(company_df)
+            label="📄 Total Filings",
+            value=len(company_df)
         )
 
-    with col3: 
-        st.metric( 
-            "💰 Total Value (USD)",
-            f"${company_df['aggregated_value_usd'].sum():,.2f}" 
-        ) 
-
-        buy_col, sell_col = st.columns(2)
-
-    with buy_col: 
-        st.success(f"🟢 Buy Transactions: {buy_count}") 
-
-    with sell_col: 
-        st.error(f"🔴 Sell Transactions: {sell_count}")
-
-    st.divider()
-
-    # -----------------------------
-    # Charts
-    # -----------------------------
-    left, right = st.columns(2)
-
-    # Pie Chart
-    with left:
-
-        st.subheader("🥧 Transaction Distribution")
-
-        transaction_df = (
-            company_df["aggregated_signal"]
-            .value_counts()
-            .reset_index()
+    with col3:
+        st.metric(
+            label="💰 Total Value (USD)",
+            value=f"${company_df['aggregated_value_usd'].sum():,.2f}"
         )
 
-        transaction_df.columns = ["Transaction", "Count"]
+    st.markdown("<br>", unsafe_allow_html=True)
 
-        fig = px.pie(
-            transaction_df,
-            names="Transaction",
-            values="Count",
-            hole=0.45,
-            title="Transaction Distribution"
+    # Buy / Sell cards
+    buy_col, sell_col = st.columns(2)
+
+    with buy_col:
+        st.markdown(
+            f"""
+            <div style="background-color:#0f3d2e;padding:20px;border-radius:12px;text-align:center;">
+                <h4 style="color:#7CFFB2;margin:0;">🟢 Buy Transactions</h4>
+                <h2 style="color:white;margin:10px 0 0 0;">{buy_count}</h2>
+            </div>
+            """,
+            unsafe_allow_html=True
         )
 
-        st.plotly_chart(
-            fig,
-            use_container_width=True
-        )
-
-    # Bar Chart
-    with right:
-
-        st.subheader("👤 Top Insider Roles")
-
-        roles_df = (
-            company_df["insider_role"]
-            .value_counts()
-            .head(10)
-            .reset_index()
-        )
-
-        roles_df.columns = ["Role", "Count"]
-
-        fig = px.bar(
-            roles_df,
-            x="Role",
-            y="Count",
-            color="Count",
-            title="Top Insider Roles"
-        )
-
-        st.plotly_chart(
-            fig,
-            use_container_width=True
+    with sell_col:
+        st.markdown(
+            f"""
+            <div style="background-color:#4a1f28;padding:20px;border-radius:12px;text-align:center;">
+                <h4 style="color:#FF8FA3;margin:0;">🔴 Sell Transactions</h4>
+                <h2 style="color:white;margin:10px 0 0 0;">{sell_count}</h2>
+            </div>
+            """,
+            unsafe_allow_html=True
         )
 
     st.divider()
@@ -249,7 +224,8 @@ if analyze:
         fig,
         use_container_width=True
     )
-        # -----------------------------
+
+    # -----------------------------
     # Filtered Data
     # -----------------------------
     st.divider()
