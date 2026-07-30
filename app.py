@@ -153,15 +153,19 @@ def get_data():
     return df
 df = get_data()
 
-# Load ticker list
-tickers_df = pd.read_csv("tickers.csv")
+# Create ticker list from actual dataset
+ticker_df = (
+    df[["ticker_symbol", "company_name"]]
+    .dropna()
+    .drop_duplicates()
+    .sort_values("company_name")
+)
 
-# Create display options
 ticker_options = (
-    tickers_df["company_name"] +
-    " (" +
-    tickers_df["ticker_symbol"] +
-    ")"
+    ticker_df["company_name"]
+    + " ("
+    + ticker_df["ticker_symbol"]
+    + ")"
 ).tolist()
 
 # -----------------------------
