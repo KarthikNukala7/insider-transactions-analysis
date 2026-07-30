@@ -66,12 +66,20 @@ ticker_options = (
 st.sidebar.header("📌 Controls")
 
 selected_company = st.sidebar.selectbox(
-    "Search Company",
+    "🔍 Search Company",
     ticker_options
+)
+
+compare_company = st.sidebar.selectbox(
+    "⚖️ Compare With",
+    ticker_options,
+    index=1
 )
 
 # Extract ticker from selection
 ticker = selected_company.split("(")[-1].replace(")", "")
+
+compare_ticker = compare_company.split("(")[-1].replace(")", "")
 
 transaction_filter = st.sidebar.selectbox(
     "Transaction Type",
@@ -79,6 +87,7 @@ transaction_filter = st.sidebar.selectbox(
 )
 
 analyze = st.sidebar.button("🔍 Analyze")
+result = None
 
 # -----------------------------
 # Main Dashboard
@@ -222,8 +231,60 @@ if analyze:
 
     st.plotly_chart(
         fig,
-        use_container_width=True
+        width="stretch"
     )
+
+    # -----------------------------
+    # Insider Activity Heatmap
+    # -----------------------------
+    st.divider()
+    st.subheader("🔥 Insider Activity Heatmap")
+
+    heatmap_df = company_df.copy()
+
+    heatmap_df["Month"] = heatmap_df["filing_date"].dt.strftime("%b")
+
+    # Convert buy to +1, sell to -1, none to 0
+    heatmap_df["signal_score"] = heatmap_df["aggregated_signal"].map({
+        "buy": 1,
+        "sell": -1,
+        "none": 0
+    })
+
+    heatmap_summary = (
+        heatmap_df.groupby("Month")["signal_score"]
+        .sum()
+        .reset_index()
+    )
+
+    # Keep calendar order
+    month_order = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
+                   "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+
+    heatmap_summary["Month"] = pd.Categorical(
+        heatmap_summary["Month"],
+        categories=month_order,
+        ordered=True
+    )
+
+    heatmap_summary = heatmap_summary.sort_values("Month")
+
+    fig = px.imshow(
+        [heatmap_summary["signal_score"].tolist()],
+        labels=dict(x="Month", color="Buy ↔ Sell"),
+        x=heatmap_summary["Month"],
+        y=["Activity"],
+        text_auto=True,
+        color_continuous_scale="RdYlGn",
+        aspect="auto"
+    )
+
+    fig.update_layout(
+        height=220,
+        margin=dict(l=20, r=20, t=30, b=20)
+    )
+
+    st.plotly_chart(fig, width="stretch")
 
     # -----------------------------
     # Filtered Data
@@ -234,7 +295,7 @@ if analyze:
 
     st.dataframe(
         company_df,
-        use_container_width=True,
+        width="stretch",
         hide_index=True
     )
 
@@ -250,4 +311,53 @@ if analyze:
         mime="text/csv"
     )
 
+# -----------------------------
+# Company Comparison
+# -----------------------------
+st.divider()
+st.subheader("⚖️ Company Comparison")
+
+compare_result = company_summary(df, compare_ticker)
+
+if analyze and result is not None and compare_result is not None:
+
+    c1, c2 = st.columns(2)
+
+    with c1:
+        st.markdown(f"### 🍎 {result['company_name']}")
+        st.metric("Filings", result["total_filings"])
+        st.metric(
+            "Total Value",
+            f"${result['total_value']:,.2f}"
+        )
+
+    with c2:
+        st.markdown(f"### 🪟 {compare_result['company_name']}")
+        st.metric("Filings", compare_result["total_filings"])
+        st.metric(
+            "Total Value",
+            f"${compare_result['total_value']:,.2f}"
+        )
+
+    # Comparison chart
+    compare_df = pd.DataFrame({
+        "Company": [
+            result["company_name"],
+            compare_result["company_name"]
+        ],
+        "Filings": [
+            result["total_filings"],
+            compare_result["total_filings"]
+        ]
+    })
+
+    fig = px.bar(
+        compare_df,
+        x="Company",
+        y="Filings",
+        color="Company",
+        title="Total Filings Comparison"
+    )
+
+    st.plotly_chart(fig, width="stretch")
     st.success("✅ Dashboard analysis completed successfully!")
